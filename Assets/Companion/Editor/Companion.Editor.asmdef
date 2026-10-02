@@ -1,0 +1,24 @@
+{
+    "name": "Companion.Editor",
+    "rootNamespace": "Companion.EditorTools",
+    "references": [
+        "Companion.Runtime",
+        "Companion.Authoring",
+        "Unity.Entities",
+        "Unity.Collections",
+        "Unity.Scenes",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

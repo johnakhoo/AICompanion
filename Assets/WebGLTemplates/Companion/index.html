@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #dce6f7; }
+      #unity-canvas { display: block; width: 100%; height: 100%; background: #dce6f7; outline: none; }
+      #loading {
+        position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 14px; font: 15px/1.5 system-ui, -apple-system, sans-serif; color: #4a4560;
+      }
+      #bar { width: min(240px, 60vw); height: 6px; border-radius: 3px; background: rgba(74, 69, 96, 0.15); overflow: hidden; }
+      #fill { width: 0; height: 100%; background: #4a4560; transition: width 0.2s; }
+      #message { display: none; max-width: 420px; padding: 0 16px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="loading">
+      <div id="bar"><div id="fill"></div></div>
+      <div id="message"></div>
+    </div>
+    <script>
+      const canvas = document.querySelector("#unity-canvas");
+      const loading = document.querySelector("#loading");
+      const fill = document.querySelector("#fill");
+      const message = document.querySelector("#message");
+
+      function showMessage(text) {
+        document.querySelector("#bar").style.display = "none";
+        message.textContent = text;
+        message.style.display = "block";
+      }
+
+      // The companion renders with Entities Graphics, which needs WebGPU.
+      if (!navigator.gpu) {
+        showMessage("Your companion needs a browser with WebGPU, such as a recent Chrome, Edge or Safari.");
+      } else {
+        const buildUrl = "Build";
+        const config = {
+          arguments: [],
+#if PROGRESSIVE_ASSET_LOADING
+          primaryDataUrls: {{{ JSON.stringify(PRIMARY_DATA_FILES) }}},
+          secondaryDataUrls: {{{ JSON.stringify(SECONDARY_DATA_FILES) }}},
+#else
+          dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+#endif
+          frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_WASM
+          codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+          symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+          streamingAssetsUrl: "StreamingAssets",
+          companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+          productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+          productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+          showBanner: (text, type) => { if (type === "error") showMessage(text); else console.warn(text); },
+        };
+
+        const script = document.createElement("script");
+        script.src = buildUrl + "/{{{ LOADER_FILENAME }}}";
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => { fill.style.width = 100 * progress + "%"; })
+            .then(() => loading.remove())
+            .catch((error) => showMessage(String(error)));
+        };
+        document.body.appendChild(script);
+      }
+    </script>
+  </body>
+</html>
